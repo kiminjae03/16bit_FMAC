@@ -1,0 +1,32 @@
+{
+  "tasks": [
+    {
+      "type": "cppbuild",
+      "label": "C/C++: g++.exe 활성 파일 빌드",
+      "command": "C:/msys64/ucrt64/bin/g++.exe",
+      "args": [
+        "${file}",
+        "${workspaceFolder}\\01_Include\\f16_multi.c",
+        "${workspaceFolder}\\01_Include\\f16_adder.c",
+        "${workspaceFolder}\\01_Include\\hextodec.c",
+        "${workspaceFolder}\\01_Include\\printbits.c",
+        "-fdiagnostics-color=always",
+        "-I${workspaceFolder}\\01_Include",
+        "-o",
+        "${fileDirname}/${fileBasenameNoExtension}.exe",
+        "-g"
+      ],
+      "options": {
+        // "cwd": "C:/msys64/ucrt64/bin"
+        "cwd": "${fileDirname}"
+      },
+      "problemMatcher": ["$gcc"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "detail": "디버거에서 생성된 작업입니다."
+    }
+  ],
+  "version": "2.0.0"
+}
