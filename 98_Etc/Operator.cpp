@@ -153,7 +153,8 @@ unsigned int Fmul(unsigned int x, unsigned int y) {
 	sign_y = (y >> 23);
 	exp_y = (y >> 17) & 0x3F;
 	frac_y = y & 0x1FFFF;
-	if (exp_x == 0 || exp_y == 0)one_zero = 1;
+
+	if (exp_x == 0 || exp_y == 0) one_zero = 1;
 	else one_zero = 0;
 
 	sign_compute = sign_x ^ sign_y;

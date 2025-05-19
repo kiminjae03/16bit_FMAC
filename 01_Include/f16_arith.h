@@ -13,14 +13,19 @@ typedef union {
 } half_float;
 
 
-extern const char* _ADDER_VERSION_;
-extern const char* _MULTI_VERSION_;
+extern const char* _ADDER_NORMAL_NO_GRS_VERSION_;
+extern const char* _ADDER_NORMAL_GRS_VERSION_;
+extern const char* _ADDER_DENORMAL_GRS_VERSION_;
+extern const char* _MULTI_NORMAL_GRS_VERSION_;
+extern const char* _MULTI_DENORMAL_GRS_VERSION_;
 
-unsigned int f16_adder(unsigned int x, unsigned int y);
-unsigned int f16_adder_ai(unsigned int x, unsigned int y);
-unsigned int f16_adder_opt(unsigned int x, unsigned int y);
+unsigned int f16_adder_normal_no_grs(unsigned int x, unsigned int y);
+unsigned int f16_adder_normal_grs(unsigned int x, unsigned int y);
+unsigned int f16_adder_denormal_grs(unsigned int x, unsigned int y);
 
-unsigned int f16_multi(unsigned int x, unsigned int y);
+unsigned int f16_multi_normal_grs(unsigned int x, unsigned int y);
+unsigned int f16_multi_denormal_grs(unsigned int x, unsigned int y);
 
 void printbits(__int64 value);
 double hextodec(unsigned int hex_input);
+double sumofbits(int x, int n);
