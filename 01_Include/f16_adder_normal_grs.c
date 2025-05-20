@@ -91,13 +91,11 @@ unsigned int f16_adder_normal_grs(unsigned int x, unsigned int y) {
     }
 
     // 2's Complement and Add
-    if( sign_xor == 0x1){                            // Sign !=
+    if( sign_xor == 0x1){                            // Sign is difference
         aligned_s = (~aligned_s + 1) & 0x3FFF;
         aligned = (aligned_l + aligned_s) & 0x3FFF;
-    }else if(sign_xor == 0x0 && expo_l != 0){        // Sign ==, Normal 
+    }else if(sign_xor == 0x0){                       // Sign is same
         aligned = (aligned_l + aligned_s) & 0x7FFF;  // 덧셈할 때 올림 발생 가능, 15-bit 
-    // }else if(sign_xor == 0x0 && expo_l == 0){        // Sign ==, Denormal
-    //     aligned = (aligned_l + aligned_s) & 0x3FFF;  // denormal 덧셈할 때 올림 발생 가능, 14-bit
     }
 
     if(aligned == 0){  // Zero

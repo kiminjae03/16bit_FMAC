@@ -57,8 +57,8 @@ using namespace std;
 // #define DIR_PATH "C:\\Users\\sejong_WW\\OneDrive - Sejong University\\03_FP_Arithmetic\\"  // Lab PC 경로
 // #define DIR_PATH "C:\\Users\\LeeJooHong\\OneDrive - Sejong University\\03_FP_Arithmetic\\"  // Notebook 경로
 
-#define REF_FILENAME "00_add_ref.txt"
-#define INPUT_FILENAME "01_add_input.txt"
+#define REF_FILENAME "03_mul_ref.txt"
+#define INPUT_FILENAME "04_mul_input.txt"
 
 
 int main()
@@ -91,7 +91,7 @@ int main()
     unsigned int real_pass_cnt = 0;
 
     // 파일명에 "01_output_YYMMDD_HHMMSS_.txt" 형식으로 현재 시각을 포함
-    strftime(output_filename, sizeof(output_filename), "02_add_normal_grs_output_%y%m%d_%H%M%S_.txt", t);
+    strftime(output_filename, sizeof(output_filename), "05_mul_normal_grs_output_%y%m%d_%H%M%S_.txt", t);
 
     // 경로와 파일명을 합쳐 전체 경로 생성
     // snprintf(ref_fullpath, sizeof(ref_fullpath), "%s%s", DIR_PATH, REF_FILENAME);
@@ -113,16 +113,16 @@ int main()
     printf("\n");
     printf(RED   "################################################################\n" RESET);
     printf(GREEN "##  FLOATING POINT                                            ##\n" RESET);
-    printf(BLUE  "##  ADDER NORMAL GRS                     VERSION : %s  ##\n" RESET, _ADDER_NORMAL_GRS_VERSION_);
+    printf(BLUE  "##  MULTIPLIER NORMAL NO GRS             VERSION : %s  ##\n" RESET, _MULTI_NORMAL_NO_GRS_VERSION_);
     printf(CYAN  "################################################################\n\n" RESET);
     // fprintf(output_file, "\n");
     fprintf(output_file, "################################################################\n");
     fprintf(output_file, "##  FLOATING POINT                                            ##\n");
-    fprintf(output_file, "##  ADDER NORMAL GRS                     VERSION : %s  ##\n", _ADDER_NORMAL_GRS_VERSION_);
+    fprintf(output_file, "##  MULTIPLIER NORMAL NO GRS             VERSION : %s  ##\n", _MULTI_NORMAL_NO_GRS_VERSION_);
     fprintf(output_file, "################################################################\n\n");
 
-    for(int i=0; i<46575; i++) {
-    // for(int i=0; i<10; i++) {
+    // for(int i=0; i<46477; i++) {
+    for(int i=0; i<10000; i++) {
         char line[MAX_LINE_LEN];
         char *pos = line;
         int testfloat_pass = 0;
@@ -148,10 +148,12 @@ int main()
 
 
         // 16-bit Floating Point Adder  ///////////////////////////////////////////////////////////////////////////////////////////////////
-        actual_output = f16_adder_normal_grs(x, y);
+        // actual_output = f16_adder_normal_grs(x, y);
         // actual_output = f16_adder_denormal_grs(x, y);
+        
         // 16-bit Floating Point Multi  ///////////////////////////////////////////////////////////////////////////////////////////////////
-        // actual_output = f16_multi_grs(x, y);
+        actual_output = f16_multi_normal_no_grs(x, y);
+        // actual_output = f16_multi_normal_grs(x, y);
         // actual_output = f16_multi_denormal_grs(x, y);
 
 
@@ -216,7 +218,7 @@ int main()
             // continue;
         }
 
-        // Denormalized number is supported. (exponent == 0x0 && mantissa != 0)
+        // Denormalized number NOT is supported. (exponent == 0x0 && mantissa != 0)
         if (((expected_output >> 10) & 0x1F) == 0 && (expected_output & 0x3FF) != 0){
             // printf("  <- Expected is Denormal!");
             // fprintf(output_file, "  <- Expected is Denormal!");
@@ -269,7 +271,7 @@ int main()
         expected_dec = hextodec(expected_output);
         actual_dec = hextodec(actual_output);
 
-        real_dec = x_dec + y_dec;
+        real_dec = x_dec * y_dec;
         if(abs(real_dec) < pow(2,-14)){
             if(0 <= real_dec) real_dec = +0.0;
             if(real_dec <  0) real_dec = -0.0;
@@ -278,7 +280,6 @@ int main()
             if(0 <= real_dec) real_dec = +sumofbits(16, 11);
             if(real_dec <  0) real_dec = -sumofbits(16, 11);
         }
-
         // r_e = fabs(fabs(real_dec) - fabs(expected_dec));
         r_e = fabs(real_dec - expected_dec);
         // r_a = fabs(fabs(real_dec) - fabs(actual_dec));
@@ -294,8 +295,7 @@ int main()
 
         if( r_a <= r_e ) real_pass = 1;
         else             real_pass = 0;
-
-
+        
         // 00_ref.txt 검색
         // TestFloat 기준으로 결과값이 다르지만, 확인된 Case에 대해 Pass 처리용
         if(real_pass == 0){

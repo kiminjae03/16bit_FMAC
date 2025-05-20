@@ -1,11 +1,18 @@
 #include "f16_arith.h"
-const char* _ADDER_NORMAL_NO_GRS_VERSION_ = "250517.01";
+const char* _ADDER_NORMAL_NO_GRS_VERSION_ = "250520.01";
 
 #define NORMAL    0
 #define OVERFLOW  1
 #define ZERO      2
 #define UNDERFLOW 2
 // #define DENORMAL  3
+
+
+// 오차 발생 이유
+// - GRS-bit가 없기 때문에 Aligning시 유효자리 부족으로 오차 발생 -> 기대값보다 크거나 작음
+// - 기대값보다 작음: 올림을 못 해서
+// - 기대값보다 큼  : 유효자리 부족으로 정밀도 낮아서
+// - 오차의 크기는 기대값 또는 실제값의 제일 작은 유효숫자
 
 
 unsigned int f16_adder_normal_no_grs(unsigned int x, unsigned int y) {
@@ -22,8 +29,6 @@ unsigned int f16_adder_normal_no_grs(unsigned int x, unsigned int y) {
     unsigned int aligned_l, aligned_s, aligned;  // Large/Small Aligned Significand(14-bit) : Significand + GRS-bit
     
     int shift_exp = 0;     // Zero Leading Count
-    unsigned int lsb;      // LSB of Aligned
-    unsigned int g, r, s;  // Guard-bit, Round-bit, Sticky-bit of Aligned
     unsigned int result;   // Sign + Exponent + Mantissa
 
     // Seperate (Sign / Expnent / Mantissa)
@@ -47,15 +52,15 @@ unsigned int f16_adder_normal_no_grs(unsigned int x, unsigned int y) {
 
     // Large Magnitude: l, Small Magnitude: s
     if(great_value){
-        sign_l = sign_x;
-        sign_s = sign_y;
+        // sign_l = sign_x;  // 삭제 필요
+        // sign_s = sign_y;  // 삭제 필요
         expo_l = expo_x;
         expo_s = expo_y;
         mant_l = mant_x;
         mant_s = mant_y;
     }else{
-        sign_l = sign_y;
-        sign_s = sign_x;
+        // sign_l = sign_y;  // 삭제 필요
+        // sign_s = sign_x;  // 삭제 필요
         expo_l = expo_y;
         expo_s = expo_x;
         mant_l = mant_y;
@@ -66,14 +71,15 @@ unsigned int f16_adder_normal_no_grs(unsigned int x, unsigned int y) {
     expo_diff = (expo_l - expo_s) & 0x3F;
 
     // Hidden 1-bit + Mantissa (11-bit)
-    if(expo_l == 0) sigf_l = 0x0;    // Denormal
+    if(expo_l == 0) sigf_l = 0x0;    // Denormal -> Zero
     else sigf_l = mant_l | 1 << 10;  // Normal
-    if(expo_s == 0) sigf_s = 0x0;    // Denormal
+    if(expo_s == 0) sigf_s = 0x0;    // Denormal -> Zero
     else sigf_s = mant_s | 1 << 10;  // Normal
 
     // Aligning
     aligned_l = sigf_l;
-    if((1 <= expo_diff) && (expo_diff <= 10) && (expo_s != 0)){        // Normal
+    // if((1 <= expo_diff) && (expo_diff <= 10) && (expo_s != 0)){        // Normal
+    if((1 <= expo_diff) && (expo_diff <= 10)){        // Normal
         aligned_s = sigf_s >> expo_diff;
     }else if(11 <= expo_diff) {                                        // Mantissa Underflow
         aligned_s = 0;
@@ -85,7 +91,7 @@ unsigned int f16_adder_normal_no_grs(unsigned int x, unsigned int y) {
     if( sign_xor == 0x1){                           // Sign is difference
         aligned_s = (~aligned_s + 1) & 0x7FF;
         aligned = (aligned_l + aligned_s) & 0x7FF;
-    }else if(sign_xor == 0x0 && expo_l != 0){       // Sign is same 
+    }else if(sign_xor == 0x0){                      // Sign is same 
         aligned = (aligned_l + aligned_s) & 0xFFF;  // 덧셈할 때 올림 발생 가능, 12-bit 
     }
 
@@ -122,34 +128,6 @@ unsigned int f16_adder_normal_no_grs(unsigned int x, unsigned int y) {
         // expo = 0;
         flag = UNDERFLOW;
     }
-
-    // 1st Rounding
-    // lsb = (aligned & 0x8) >> 3;
-    // g = (aligned & 0x4) >> 2;
-    // r = (aligned & 0x2) >> 1;
-    // s = aligned & 0x1;
-
-    // aligned = (aligned >> 3);
-    // if(g == 0){;}                                // GRS : 0xx
-    // else if( g == 1 && ((r != 0) || (s != 0))){  // GRS : 11x or 1x1
-    //     aligned = aligned + 1;
-    // }else{                                       // GRS : 100
-    //     if(lsb == 1) {
-    //         aligned = aligned + 1;
-    //     }else{
-    //         ;
-    //     }
-    // }
-
-    // // 2nd Rounding
-    // if(aligned & 0x800 && expo == 0x1F) {        // Overflow
-    //     flag = OVERFLOW;
-    // }else if(aligned & 0x800){                   // Normal
-    //     expo = expo + 1;
-    //     aligned = aligned >> 1;
-    // }else if((aligned & 0x400) && expo == 0x0){  // Denormal
-    //     expo = expo + 1;
-    // }
 
     mant = aligned & 0x3FF;
 

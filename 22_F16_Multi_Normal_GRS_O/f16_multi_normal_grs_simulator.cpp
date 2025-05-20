@@ -175,7 +175,7 @@ int main()
             fprintf(output_file, "   <------  %s %04X ", "FAIL" , actual_output);
         }
 
-        // Denormalized number is supported. (exponent == 0x0 && mantissa != 0)
+        // Denormalized number NOT is supported. (exponent == 0x0 && mantissa != 0)
         if (((x >> 10) & 0x1F) == 0 && (x & 0x3FF) != 0){
             // printf("  <- X is Denormal!");
             // fprintf(output_file, "  <- X is Denormal!");
@@ -217,7 +217,7 @@ int main()
             // continue;
         }
 
-        // Denormalized number is supported. (exponent == 0x0 && mantissa != 0)
+        // Denormalized number NOT is supported. (exponent == 0x0 && mantissa != 0)
         if (((expected_output >> 10) & 0x1F) == 0 && (expected_output & 0x3FF) != 0){
             // printf("  <- Expected is Denormal!");
             // fprintf(output_file, "  <- Expected is Denormal!");
@@ -248,10 +248,37 @@ int main()
         double r_e, r_a;
 
         x_dec = hextodec(x);
+        if(abs(x_dec) < pow(2,-14)){
+            if(0 <= x_dec) x_dec = +0.0;
+            if(x_dec <  0) x_dec = -0.0;
+        } 
+        if(sumofbits(16, 11) < abs(x_dec)){
+            if(0 <= x_dec) x_dec = +sumofbits(16, 11);
+            if(x_dec <  0) x_dec = -sumofbits(16, 11);
+        }
+        
         y_dec = hextodec(y);
+        if(abs(y_dec) < pow(2,-14)){
+            if(0 <= y_dec) y_dec = +0.0;
+            if(y_dec <  0) y_dec = -0.0;
+        } 
+        if(sumofbits(16, 11) < abs(y_dec)){
+            if(0 <= y_dec) y_dec = +sumofbits(16, 11);
+            if(y_dec <  0) y_dec = -sumofbits(16, 11);
+        }
+
         expected_dec = hextodec(expected_output);
         actual_dec = hextodec(actual_output);
+
         real_dec = x_dec * y_dec;
+        if(abs(real_dec) < pow(2,-14)){
+            if(0 <= real_dec) real_dec = +0.0;
+            if(real_dec <  0) real_dec = -0.0;
+        } 
+        if(sumofbits(16, 11) < abs(real_dec)){
+            if(0 <= real_dec) real_dec = +sumofbits(16, 11);
+            if(real_dec <  0) real_dec = -sumofbits(16, 11);
+        }
         // r_e = fabs(fabs(real_dec) - fabs(expected_dec));
         r_e = fabs(real_dec - expected_dec);
         // r_a = fabs(fabs(real_dec) - fabs(actual_dec));
@@ -265,12 +292,12 @@ int main()
         printf("--- |Real-Expected|   ----- |Real-Actual|\n");
         printf("%19.10f   %19.10f", r_e, r_a);
 
-        if(pow(2, -14) < fabs(x_dec) && fabs(x_dec) < pow(2, 17) &&
-            pow(2, -14) < fabs(y_dec) && fabs(y_dec) < pow(2, 17) &&
-             pow(2, -14) < fabs(real_dec) && fabs(real_dec) < pow(2, 17)){
+        // if(pow(2, -14) <= fabs(x_dec) && fabs(x_dec) <= sumofbits(16, 11) &&
+        //     pow(2, -14) <= fabs(y_dec) && fabs(y_dec) <= sumofbits(16, 11) &&
+        //      pow(2, -14) <= fabs(real_dec) && fabs(real_dec) <= sumofbits(16, 11)){
             if( r_a <= r_e ) real_pass = 1;
             else             real_pass = 0;
-        } else real_pass = 1;
+        // } else real_pass = 1;
         
         // 00_ref.txt 검색
         // TestFloat 기준으로 결과값이 다르지만, 확인된 Case에 대해 Pass 처리용

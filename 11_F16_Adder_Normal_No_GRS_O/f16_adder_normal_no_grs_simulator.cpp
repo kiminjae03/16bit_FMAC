@@ -75,16 +75,19 @@ int main()
     char input_fullpath[512];
     char output_fullpath[512];
     char output_filename[512];
-    unsigned int failcase[10000];
-    unsigned int failx[10000];
-    unsigned int faily[10000];
-    unsigned int failexpectedoutput[10000];
-    unsigned int failexpectedflag[10000];
-    unsigned int failactualoutput[10000];
+    unsigned int failcase[20000];
+    unsigned int failx[20000];
+    unsigned int faily[20000];
+    unsigned int failexpectedoutput[20000];
+    unsigned int failexpectedflag[20000];
+    unsigned int failactualoutput[20000];
+    double failexpected_actualoutput[20000];
+    char ok[20000];
     unsigned int failcase_cnt = 0;
 
     unsigned int x, y, expected_output, expected_flag, actual_output;
     unsigned int ref_x, ref_y, ref_expected_output, ref_actual_output;
+    
     
     unsigned int testfloat_pass_cnt = 0;
     unsigned int testfloat_fail_cnt = 0;
@@ -121,8 +124,8 @@ int main()
     fprintf(output_file, "##  ADDER NORMAL NO GRS                  VERSION : %s  ##\n", _ADDER_NORMAL_NO_GRS_VERSION_);
     fprintf(output_file, "################################################################\n\n");
 
-    // for(int i=0; i<46572; i++) {
-    for(int i=0; i<100; i++) {
+    for(int i=0; i<46574; i++) {
+    // for(int i=0; i<100; i++) {
         char line[MAX_LINE_LEN];
         char *pos = line;
         int testfloat_pass = 0;
@@ -174,7 +177,7 @@ int main()
             fprintf(output_file, "   <------  %s %04X ", "FAIL" , actual_output);
         }
 
-        // Denormalized number is supported. (exponent == 0x0 && mantissa != 0)
+        // Denormalized number NOT is supported. (exponent == 0x0 && mantissa != 0)
         if (((x >> 10) & 0x1F) == 0 && (x & 0x3FF) != 0){
             // printf("  <- X is Denormal!");
             // fprintf(output_file, "  <- X is Denormal!");
@@ -216,7 +219,7 @@ int main()
             // continue;
         }
 
-        // Denormalized number is supported. (exponent == 0x0 && mantissa != 0)
+        // Denormalized number NOT is supported. (exponent == 0x0 && mantissa != 0)
         if (((expected_output >> 10) & 0x1F) == 0 && (expected_output & 0x3FF) != 0){
             // printf("  <- Expected is Denormal!");
             // fprintf(output_file, "  <- Expected is Denormal!");
@@ -245,15 +248,43 @@ int main()
         
         double x_dec, y_dec, expected_dec, actual_dec, real_dec;
         double r_e, r_a;
+        double expected_error, actual_error;
+        double error;
 
         x_dec = hextodec(x);
+        if(abs(x_dec) < pow(2,-14)){         // If Denormal -> +/-0.0
+            if(0 <= x_dec) x_dec = +0.0;
+            if(x_dec <  0) x_dec = -0.0;
+        } 
+        if(sumofbits(16, 11) < abs(x_dec)){  // If Overflow -> +/-Max
+            if(0 <= x_dec) x_dec = +sumofbits(16, 11);
+            if(x_dec <  0) x_dec = -sumofbits(16, 11);
+        }
+        
         y_dec = hextodec(y);
+        if(abs(y_dec) < pow(2,-14)){         // If Denormal -> +/-0.0
+            if(0 <= y_dec) y_dec = +0.0;
+            if(y_dec <  0) y_dec = -0.0;
+        } 
+        if(sumofbits(16, 11) < abs(y_dec)){  // If Overflow -> +/-Max
+            if(0 <= y_dec) y_dec = +sumofbits(16, 11);
+            if(y_dec <  0) y_dec = -sumofbits(16, 11);
+        }
+
         expected_dec = hextodec(expected_output);
         actual_dec = hextodec(actual_output);
+
         real_dec = x_dec + y_dec;
-        // r_e = fabs(fabs(real_dec) - fabs(expected_dec));
+        if(abs(real_dec) < pow(2,-14)){         // If Denormal -> +/-0.0
+            if(0 <= real_dec) real_dec = +0.0;
+            if(real_dec <  0) real_dec = -0.0;
+        } 
+        if(sumofbits(16, 11) < abs(real_dec)){  // If Overflow -> +/-Max
+            if(0 <= real_dec) real_dec = +sumofbits(16, 11);
+            if(real_dec <  0) real_dec = -sumofbits(16, 11);
+        }
+
         r_e = fabs(real_dec - expected_dec);
-        // r_a = fabs(fabs(real_dec) - fabs(actual_dec));
         r_a = fabs(real_dec - actual_dec);
 
         printf("-------- X --------   -------- Y --------   - Expected_Output -   -- Actual_Output --   --- Real_result ---\n");
@@ -264,12 +295,18 @@ int main()
         printf("--- |Real-Expected|   ----- |Real-Actual|\n");
         printf("%19.10f   %19.10f", r_e, r_a);
 
-        if(pow(2, -14) < fabs(x_dec) && fabs(x_dec) < pow(2, 17) &&
-            pow(2, -14) < fabs(y_dec) && fabs(y_dec) < pow(2, 17) &&
-             pow(2, -14) < fabs(real_dec) && fabs(real_dec) < pow(2, 17)){
-            if( r_a <= r_e ) real_pass = 1;
-            else             real_pass = 0;
-        } else real_pass = 1;
+        if( r_e >= r_a ){  // If Real-Expected >= Real-Actual
+            real_pass = 1;
+        }
+        else{              // If Real-Expected < Real-Actual: NO GRS로 인한 오차 발생
+            expected_error = calerror(expected_output);
+            actual_error = calerror(actual_output);
+            if (expected_error >= actual_error) error = actual_error;  // expected와 actual의 가장 작은 유효숫자 중 작은 것 선택
+            else error = expected_error;
+
+            if(fabs(expected_dec - actual_dec) == error) real_pass = 1;
+            else real_pass = 0;
+        }
 
         // 00_ref.txt 검색
         // TestFloat 기준으로 결과값이 다르지만, 확인된 Case에 대해 Pass 처리용
@@ -280,8 +317,7 @@ int main()
                 return 1;
             }
 
-            for(int j=0; j<5000; j++)
-            {
+            for(int j=0; j<5000; j++) {
                 char ref_line[MAX_LINE_LEN];
                 char *ref_pos = ref_line;
                 
@@ -323,6 +359,8 @@ int main()
             failexpectedoutput[failcase_cnt] = expected_output;
             failexpectedflag[failcase_cnt] = expected_flag;
             failactualoutput[failcase_cnt] = actual_output;
+            failexpected_actualoutput[failcase_cnt] = expected_dec - actual_dec;
+            ok[failcase_cnt] = 'X';
             failcase_cnt++;
         }
 
@@ -347,7 +385,7 @@ int main()
     
     fprintf(output_file, "\n# Real Fail Case Number #\n");
     for(int i=0; i<failcase_cnt; i++){
-        fprintf(output_file, "Real Fail Case Number : %5d   <-  %04X %04X %04X %02X %04X\n", failcase[i], failx[i], faily[i], failexpectedoutput[i], failexpectedflag[i],failactualoutput[i]);
+        fprintf(output_file, "Real Fail Case Number : %5d   <-  %04X %04X %04X %02X %04X %+19.10f   %c\n", failcase[i], failx[i], faily[i], failexpectedoutput[i], failexpectedflag[i],failactualoutput[i],failexpected_actualoutput[i], ok[i]);
     }
     fprintf(output_file, "Real Fail Cnt : %d\n", failcase_cnt);
 
