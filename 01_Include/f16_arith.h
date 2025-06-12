@@ -21,6 +21,9 @@ extern const char* _MULTI_NORMAL_NO_GRS_VERSION_;
 extern const char* _MULTI_NORMAL_GRS_VERSION_;
 extern const char* _MULTI_DENORMAL_GRS_VERSION_;
 
+extern const char* _FMAC_NORMAL_NO_GRS_VERSION_;
+
+
 unsigned int f16_adder_normal_no_grs(unsigned int x, unsigned int y);
 unsigned int f16_adder_normal_grs(unsigned int x, unsigned int y);
 unsigned int f16_adder_denormal_grs(unsigned int x, unsigned int y);
@@ -28,6 +31,8 @@ unsigned int f16_adder_denormal_grs(unsigned int x, unsigned int y);
 unsigned int f16_multi_normal_no_grs(unsigned int x, unsigned int y);
 unsigned int f16_multi_normal_grs(unsigned int x, unsigned int y);
 unsigned int f16_multi_denormal_grs(unsigned int x, unsigned int y);
+
+unsigned int f16_fmac_normal_no_grs(unsigned int x, unsigned int y, unsigned int z);
 
 void printbits(__int64 value);
 double hextodec(unsigned int hex_input);

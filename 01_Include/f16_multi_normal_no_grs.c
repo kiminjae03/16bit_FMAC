@@ -1,5 +1,5 @@
 #include "f16_arith.h"
-const char* _MULTI_NORMAL_NO_GRS_VERSION_ = "250508.01";
+const char* _MULTI_NORMAL_NO_GRS_VERSION_ = "250523.01";
 
 #define NORMAL    0
 #define OVERFLOW  1
@@ -20,8 +20,6 @@ unsigned int f16_multi_normal_no_grs(unsigned int x, unsigned int y) {
     unsigned int aligned;               // Aligned Significand(14-bit) : Significand + GRS-bit
     
     int expo_add = 0;
-    unsigned int lsb;      // LSB of Aligned
-    unsigned int g, r, s;  // Guard-bit, Round-bit, Sticky-bit of Aligned
     unsigned int result;   // Sign + Exponent + Mantissa
 
     // Seperate (Sign / Expnent / Mantissa)
@@ -47,18 +45,12 @@ unsigned int f16_multi_normal_no_grs(unsigned int x, unsigned int y) {
     // Multiply: significand_x * significand_y = aligned(22-bit)
     aligned = (sigf_x * sigf_y) & 0x3FFFFF;
 
-    // 22-bit -> 11-bit (including Sticky-bit)
+    // 22-bit -> 11-bit
     if((aligned & 0x200000) != 0){
-        // unsigned int mask = (1 << 8) - 1;
-        // unsigned int sticky = (aligned & mask) ? 1 : 0;
-        // aligned = aligned >> 8 | sticky;
         aligned = aligned >> 11;
 		aligned = aligned & 0x7FF;
 		expo_add = 1;
 	}else{
-        // unsigned int mask = (1 << 7) - 1;
-        // unsigned int sticky = (aligned & mask) ? 1 : 0;
-        // aligned = aligned >> 7 | sticky;
         aligned = aligned >> 10;
 		aligned = aligned & 0x7FF;
 		expo_add = 0;
@@ -73,30 +65,6 @@ unsigned int f16_multi_normal_no_grs(unsigned int x, unsigned int y) {
     }else if(expo <= 0) {   // Underflow
         flag = UNDERFLOW;
     }else{;}                // Normal
-
-    // // 1st Rounding
-    // lsb = (aligned & 0x8) >> 3;
-    // g = (aligned & 0x4) >> 2;
-    // r = (aligned & 0x2) >> 1;
-    // s = aligned & 0x1;
-
-    // aligned = (aligned >> 3);
-    // if(g == 0){;}                                // GRS : 0xx
-    // else if( g == 1 && ((r != 0) || (s != 0))){  // GRS : 11x or 1x1
-    //     aligned = aligned + 1;
-    // }else{                                       // GRS : 100
-    //     if(lsb == 1) {
-    //         aligned = aligned + 1;
-    //     }else{;}
-    // }
-
-    // // 2nd Rounding
-    // if(aligned & 0x800 && expo == 0x1F) {        // Overflow
-    //     flag = OVERFLOW;
-    // }else if(aligned & 0x800){                   // Normal
-    //     expo = expo + 1;
-    //     aligned = aligned >> 1;
-    // }
 
     mant = aligned & 0x3FF;
 

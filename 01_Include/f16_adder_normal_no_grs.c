@@ -28,7 +28,7 @@ unsigned int f16_adder_normal_no_grs(unsigned int x, unsigned int y) {
     unsigned int sigf_l, sigf_s;                 // Large/Small Significand(11-bit) : Hidden 1-bit + Mantissa
     unsigned int aligned_l, aligned_s, aligned;  // Large/Small Aligned Significand(14-bit) : Significand + GRS-bit
     
-    int shift_exp = 0;     // Zero Leading Count
+    int shift_exp = 0;     // Leading Zero Count
     unsigned int result;   // Sign + Exponent + Mantissa
 
     // Seperate (Sign / Expnent / Mantissa)
@@ -91,15 +91,15 @@ unsigned int f16_adder_normal_no_grs(unsigned int x, unsigned int y) {
     if( sign_xor == 0x1){                           // Sign is difference
         aligned_s = (~aligned_s + 1) & 0x7FF;
         aligned = (aligned_l + aligned_s) & 0x7FF;
-    }else if(sign_xor == 0x0){                      // Sign is same 
-        aligned = (aligned_l + aligned_s) & 0xFFF;  // 덧셈할 때 올림 발생 가능, 12-bit 
+    }else if(sign_xor == 0x0){                      // Sign is same
+        aligned = (aligned_l + aligned_s) & 0xFFF;  // 덧셈할 때 올림 발생 가능, 12-bit
     }
 
     if(aligned == 0){  // Zero
         flag = ZERO;
     }
 
-    // Leading Zero Counter
+    // Leading Zero Counter(12-bit)
     if      (aligned & 0x800) shift_exp = -1;
     else if (aligned & 0x400) shift_exp =  0;
     else if (aligned & 0x200) shift_exp =  1;

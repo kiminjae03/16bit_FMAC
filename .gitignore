@@ -1,8 +1,8 @@
 # Created by https://www.toptal.com/developers/gitignore/api/c,visualstudiocode,windows
 # Edit at https://www.toptal.com/developers/gitignore?templates=c,visualstudiocode,windows
 
-Etc/**.*/
-*_??????_??????*.txt
+98_Etc/**.*/
+*output*.txt
 
 ### C ###
 # Prerequisites

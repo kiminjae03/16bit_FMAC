@@ -12,6 +12,7 @@
         "${workspaceFolder}\\01_Include\\f16_multi_normal_no_grs.c",
         "${workspaceFolder}\\01_Include\\f16_multi_normal_grs.c",
         "${workspaceFolder}\\01_Include\\f16_multi_denormal_grs.c",
+        "${workspaceFolder}\\01_Include\\f16_fmac_normal_no_grs.c",
         "${workspaceFolder}\\01_Include\\hextodec.c",
         "${workspaceFolder}\\01_Include\\printbits.c",
         "${workspaceFolder}\\01_Include\\sumofbits.c",

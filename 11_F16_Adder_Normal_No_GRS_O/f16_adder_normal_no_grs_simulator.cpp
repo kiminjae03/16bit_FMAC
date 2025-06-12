@@ -81,17 +81,15 @@ int main()
     unsigned int failexpectedoutput[20000];
     unsigned int failexpectedflag[20000];
     unsigned int failactualoutput[20000];
-    double failexpected_actualoutput[20000];
-    char ok[20000];
     unsigned int failcase_cnt = 0;
 
     unsigned int x, y, expected_output, expected_flag, actual_output;
     unsigned int ref_x, ref_y, ref_expected_output, ref_actual_output;
     
-    
     unsigned int testfloat_pass_cnt = 0;
     unsigned int testfloat_fail_cnt = 0;
     unsigned int real_pass_cnt = 0;
+    unsigned int error_pass_cnt = 0;
 
     // 파일명에 "01_output_YYMMDD_HHMMSS_.txt" 형식으로 현재 시각을 포함
     strftime(output_filename, sizeof(output_filename), "02_add_normal_no_grs_output_%y%m%d_%H%M%S_.txt", t);
@@ -131,6 +129,7 @@ int main()
         int testfloat_pass = 0;
         int real_pass = 0;
         int ref_match = 0;
+        int error_pass = 0;
 
         printf(GREEN "#%05d  " RESET, i+1);  // #00001
         fprintf(output_file, "#%05d  ", i+1);  // #00001
@@ -287,25 +286,27 @@ int main()
         r_e = fabs(real_dec - expected_dec);
         r_a = fabs(real_dec - actual_dec);
 
+        expected_error = calerror(expected_output);
+        actual_error = calerror(actual_output);
+        if (expected_error >= actual_error) error = actual_error;  // expected와 actual의 가장 작은 유효숫자 중 작은 것 선택
+        else error = expected_error;
+
         printf("-------- X --------   -------- Y --------   - Expected_Output -   -- Actual_Output --   --- Real_result ---\n");
         // printf("----------------X  ----------------Y  --Expected_Output  ----Actual_Output  ------Real_result\n");
         // printf("X----------------  Y----------------  Expected_Output--  Actual_Output----  Real_result------\n");
         printf("%+19.10f   %+19.10f   %+19.10f   %+19.10f   %+19.10f\n", x_dec, y_dec, expected_dec, actual_dec, real_dec);
         
-        printf("--- |Real-Expected|   ----- |Real-Actual|\n");
-        printf("%19.10f   %19.10f", r_e, r_a);
+        printf("--- |Real-Expected|   ----- |Real-Actual|   ------- |Min Error|\n");
+        printf("%19.10f   %19.10f   %19.10f", r_e, r_a, error);
 
         if( r_e >= r_a ){  // If Real-Expected >= Real-Actual
             real_pass = 1;
-        }
-        else{              // If Real-Expected < Real-Actual: NO GRS로 인한 오차 발생
-            expected_error = calerror(expected_output);
-            actual_error = calerror(actual_output);
-            if (expected_error >= actual_error) error = actual_error;  // expected와 actual의 가장 작은 유효숫자 중 작은 것 선택
-            else error = expected_error;
-
-            if(fabs(expected_dec - actual_dec) == error) real_pass = 1;
-            else real_pass = 0;
+        }else{             // If Real-Expected < Real-Actual: NO GRS로 인한 오차 발생
+            if(fabs(expected_dec - actual_dec) == error){
+                error_pass = 1;
+            }else{
+                real_pass = 0;
+            }
         }
 
         // 00_ref.txt 검색
@@ -317,7 +318,7 @@ int main()
                 return 1;
             }
 
-            for(int j=0; j<5000; j++) {
+            for(int j=0; j<5000; j++){
                 char ref_line[MAX_LINE_LEN];
                 char *ref_pos = ref_line;
                 
@@ -350,6 +351,10 @@ int main()
             real_pass_cnt++;
             printf(YELLOW "   <-------  REAL PASS(REF MATCH)  \n" RESET);
             fprintf(output_file, "                            <------  REAL PASS(REF MATCH)\n");
+        }else if(real_pass == 0 && error_pass == 1){  // 10진수 계산 기준 틀리지만, 오차 범위에 들어감
+            error_pass_cnt++;
+            printf(YELLOW "   <------  ERROR PASS  \n" RESET);
+            fprintf(output_file, "                            <------  ERRO PASS\n");
         }else if(real_pass == 0 && ref_match == 0){  // 10진수 계산 기준 틀리고, 00_ref.txt 와 matching 안함
             printf(RED "   <-------  REAL FAIL  \n" RESET);
             fprintf(output_file, "                            <------  REAL FAIL   <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
@@ -359,8 +364,6 @@ int main()
             failexpectedoutput[failcase_cnt] = expected_output;
             failexpectedflag[failcase_cnt] = expected_flag;
             failactualoutput[failcase_cnt] = actual_output;
-            failexpected_actualoutput[failcase_cnt] = expected_dec - actual_dec;
-            ok[failcase_cnt] = 'X';
             failcase_cnt++;
         }
 
@@ -382,12 +385,15 @@ int main()
     
     printf("Real Pass Rate : %.2f%% (%d/%d)\n", (float(real_pass_cnt)*100/(testfloat_pass_cnt+testfloat_fail_cnt)), real_pass_cnt, (testfloat_pass_cnt+testfloat_fail_cnt));
     fprintf(output_file, "Real Pass Rate : %.2f%% (%d/%d)\n", (float(real_pass_cnt)*100/(testfloat_pass_cnt+testfloat_fail_cnt)), real_pass_cnt, (testfloat_pass_cnt+testfloat_fail_cnt));
+
+    printf("Error Pass Rate : %.2f%% (%d/%d)\n", (float(real_pass_cnt+error_pass_cnt)*100/(testfloat_pass_cnt+testfloat_fail_cnt)), (real_pass_cnt+error_pass_cnt), (testfloat_pass_cnt+testfloat_fail_cnt));
+    fprintf(output_file, "Error Pass Rate : %.2f%% (%d/%d)\n", (float(real_pass_cnt+error_pass_cnt)*100/(testfloat_pass_cnt+testfloat_fail_cnt)), (real_pass_cnt+error_pass_cnt), (testfloat_pass_cnt+testfloat_fail_cnt));
     
-    fprintf(output_file, "\n# Real Fail Case Number #\n");
+    fprintf(output_file, "\n# Fail Case Number #\n");
     for(int i=0; i<failcase_cnt; i++){
-        fprintf(output_file, "Real Fail Case Number : %5d   <-  %04X %04X %04X %02X %04X %+19.10f   %c\n", failcase[i], failx[i], faily[i], failexpectedoutput[i], failexpectedflag[i],failactualoutput[i],failexpected_actualoutput[i], ok[i]);
+        fprintf(output_file, "Fail Case Number : %5d   <-  %04X %04X %04X %02X %04X\n", failcase[i], failx[i], faily[i], failexpectedoutput[i], failexpectedflag[i],failactualoutput[i]);
     }
-    fprintf(output_file, "Real Fail Cnt : %d\n", failcase_cnt);
+    fprintf(output_file, "Fail Cnt : %d\n", failcase_cnt);
 
 
     end = clock();
