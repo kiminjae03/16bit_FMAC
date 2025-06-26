@@ -1,11 +1,11 @@
 module f16_fmac_normal_no_grs (
-    input  [15:0] x,
-    input  [15:0] y,
-    input  [15:0] z,
-    output [15:0] result
+    input      [15:0] x,
+    input      [15:0] y,
+    input      [15:0] z,
+    output reg [15:0] result
 );
 
-// parameter == constant
+// parameter == const
 parameter NORMAL    = 2'b00;
 parameter OVERFLOW  = 2'b01;
 parameter UNDERFLOW = 2'b10;
@@ -89,47 +89,49 @@ wire [22:0] aligned = sign_xor ? (aligned_l + ~aligned_s + 1) : (aligned_l + ali
 wire flag_zero = (aligned == 23'd0) ? 1 : 0;
 
 // Leading Zero Counter(23-bit)
+wire carry = aligned[22] ? 1'b1 : 1'b0;
 reg[4:0] shift_exp;
-reg carry;
 always@(*) begin
-    shift_exp = 5'd0;
-    carry = 1'b0;
-    if(aligned[22]) carry = 1'b1;
-    if(aligned[21]) shift_exp = 5'd0;
-    if(aligned[20]) shift_exp = 5'd1;
-    if(aligned[19]) shift_exp = 5'd2;
-    if(aligned[19]) shift_exp = 5'd3;
-    if(aligned[18]) shift_exp = 5'd4;
-    if(aligned[17]) shift_exp = 5'd5;
-    if(aligned[16]) shift_exp = 5'd6;
-    if(aligned[15]) shift_exp = 5'd7;
-    if(aligned[14]) shift_exp = 5'd8;
-    if(aligned[13]) shift_exp = 5'd9;
-    if(aligned[12]) shift_exp = 5'd10;
-    if(aligned[11]) shift_exp = 5'd11;
-    if(aligned[10]) shift_exp = 5'd12;
-    if(aligned[9])  shift_exp = 5'd13;
-    if(aligned[8])  shift_exp = 5'd14;
-    if(aligned[7])  shift_exp = 5'd15;
-    if(aligned[6])  shift_exp = 5'd16;
-    if(aligned[5])  shift_exp = 5'd17;
-    if(aligned[4])  shift_exp = 5'd18;
-    if(aligned[3])  shift_exp = 5'd19;
-    if(aligned[2])  shift_exp = 5'd20;
-    if(aligned[1])  shift_exp = 5'd21;
-    if(aligned[0])  shift_exp = 5'd22;
+    if      (aligned[21]) shift_exp = 5'd0;
+    else if (aligned[20]) shift_exp = 5'd1;
+    else if (aligned[19]) shift_exp = 5'd2;
+    else if (aligned[18]) shift_exp = 5'd3;
+    else if (aligned[17]) shift_exp = 5'd4;
+    else if (aligned[16]) shift_exp = 5'd5;
+    else if (aligned[15]) shift_exp = 5'd6;
+    else if (aligned[14]) shift_exp = 5'd7;
+    else if (aligned[13]) shift_exp = 5'd8;
+    else if (aligned[12]) shift_exp = 5'd9;
+    else if (aligned[11]) shift_exp = 5'd10;
+    else if (aligned[10]) shift_exp = 5'd11;
+    else if (aligned[9])  shift_exp = 5'd12;
+    else if (aligned[8])  shift_exp = 5'd13;
+    else if (aligned[7])  shift_exp = 5'd14;
+    else if (aligned[6])  shift_exp = 5'd15;
+    else if (aligned[5])  shift_exp = 5'd16;
+    else if (aligned[4])  shift_exp = 5'd17;
+    else if (aligned[3])  shift_exp = 5'd18;
+    else if (aligned[2])  shift_exp = 5'd19;
+    else if (aligned[1])  shift_exp = 5'd20;
+    else if (aligned[0])  shift_exp = 5'd21;
+    else                  shift_exp = 5'd0;
 end
 
 // Normalizing
 wire [5:0] expo = ((expo_l - shift_exp + carry - BIAS) >= 0) ? (expo_l - shift_exp + carry - BIAS) : 0;
-wire [1:0] flag = (expo >= 6'd32) ? OVERFLOW : 
-                  (expo == 6'd0) ? UNDERFLOW : NORMAL;
+wire [1:0] flag = (expo >= 6'd32) ? OVERFLOW : (expo == 6'd0) ? UNDERFLOW : NORMAL;
 wire [21:0] normalized = carry ? aligned >> 1 : aligned << shift_exp;
 
+// Mantissa (normal)
 wire [9:0] mant = normalized[21:12];
 
-assign result = (flag_zero) {sign, 5'd0, 10'd0} :
-                (flag == NORMAL) {sign, expo, mant} :
-                (flag == OVERFLOW) {sign, 5'h1F, 10'h3FF} : {sign, 5'd0, 10'd0};
+always@(*) begin
+    if (flag_zero) result = {sign, 5'h00, 10'h000};
+    else begin
+        if(flag == NORMAL   ) result = {sign, expo, mant};
+        if(flag == OVERFLOW ) result = {sign, 5'h1F, 10'h3FF};
+        if(flag == UNDERFLOW) result = {sign, 5'h00, 10'h000};
+    end
+end
     
 endmodule
