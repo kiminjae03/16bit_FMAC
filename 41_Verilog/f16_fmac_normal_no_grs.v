@@ -18,7 +18,7 @@ wire sign_z = z[15];
 
 wire [4:0] expo_x = x[14:10];
 wire [4:0] expo_y = y[14:10];
-wire [5:0] expo_z = z[14:10] + BIAS; // 6-bit(Exponent + Bias)
+wire [5:0] expo_z = {1'b0, z[14:10]} + {1'b0, BIAS}; // 6-bit(Exponent + Bias)
 
 wire [9:0] mant_x = x[9:0];
 wire [9:0] mant_y = y[9:0];
@@ -27,10 +27,10 @@ wire [9:0] mant_z = z[9:0];
 // Significand(11-bit / 22-bit) : Hidden 1-bit + Mantissa
 wire [10:0] sigf_x = {1'b1, mant_x};
 wire [10:0] sigf_y = {1'b1, mant_y};
-wire [21:0] sigf_z = (expo_z == BIAS) ? 22'd0 : {1'b1, mant_z, 11'd0};
+wire [21:0] sigf_z = (expo_z == {1'b0, BIAS}) ? 22'd0 : {1'b1, mant_z, 11'd0};
 
 // Zero = (? x 0) or (0 x ?) -> t_falg = true
-wire t_flag = (expo_x == 5'd0 || expo_y == 5'd0) ? 1'b1 : 1'b0;
+wire t_flag = (expo_x == 5'd0 || expo_y == 5'd0);
 
 // Multiply: significand_x * significand_y (22-bit)
 wire [21:0] mult = sigf_x * sigf_y;
@@ -59,7 +59,9 @@ always@(*) begin
 end
 
 // Magnitude Compare : {Exp_t + aligned_t} <> {Exp_z + sigf_z}
-wire great_value = ({expo_t, aligned_t} >= {expo_z, sigf_z}) ? 1'b1 : 1'b0;
+wire [27:0] mag_t = {expo_t, aligned_t};
+wire [27:0] mag_z = {expo_z, sigf_z};
+wire great_value = (mag_t >= mag_z);
 
 // Sign
 wire sign_xor = sign_t ^ sign_z;
@@ -83,13 +85,13 @@ assign aligned_l = sigf_l;
 assign aligned_s = (expo_diff >= 6'd21) ? 22'd0 : sigf_s >> expo_diff;
 
 // 2's Complement and Add
-wire [22:0] aligned = sign_xor ? (aligned_l + ~aligned_s + 1) : (aligned_l + aligned_s);
+wire [22:0] aligned = sign_xor ? (aligned_l - aligned_s) : (aligned_l + aligned_s);
 
 // aligned == 0 -> Zero
-wire flag_zero = (aligned == 23'd0) ? 1 : 0;
+wire flag_zero = (aligned == 23'd0);
 
 // Leading Zero Counter(23-bit)
-wire carry = aligned[22] ? 1'b1 : 1'b0;
+wire carry = aligned[22];
 reg[4:0] shift_exp;
 always@(*) begin
     if      (aligned[21]) shift_exp = 5'd0;
@@ -118,12 +120,33 @@ always@(*) begin
 end
 
 // Normalizing
-wire [5:0] expo = ((expo_l - shift_exp + carry - BIAS) >= 0) ? (expo_l - shift_exp + carry - BIAS) : 0;
-wire [1:0] flag = (expo >= 6'd32) ? OVERFLOW : (expo == 6'd0) ? UNDERFLOW : NORMAL;
-wire [21:0] normalized = carry ? aligned >> 1 : aligned << shift_exp;
+reg [5:0] updated_expo;
+reg [4:0] expo;
+reg [1:0] flag;
+reg [21:0] normalized;
+always@(*) begin
+    if ((expo_l - shift_exp + carry - BIAS) >= 0) begin
+        updated_expo = expo_l - shift_exp + carry - BIAS;
+    end else begin
+        updated_expo = 6'd0;
+    end
+    normalized = 22'd0;
+    if (updated_expo >= 6'd32) begin
+        flag = OVERFLOW;
+    end else begin
+        expo = updated_expo[4:0];
+        if (updated_expo == 6'd0) begin
+            flag = UNDERFLOW;
+        end else begin
+            flag = NORMAL;
+            if (carry) normalized = aligned >> 1;
+            else normalized = aligned << shift_exp;    
+        end
+    end 
+end
 
 // Mantissa (normal)
-wire [9:0] mant = normalized[21:12];
+wire [9:0] mant = normalized[20:11];
 
 always@(*) begin
     if (flag_zero) result = {sign, 5'h00, 10'h000};
@@ -135,3 +158,4 @@ always@(*) begin
 end
     
 endmodule
+
