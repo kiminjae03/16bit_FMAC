@@ -60,6 +60,17 @@ using namespace std;
 #define REF_FILENAME "06_fmac_ref.txt"
 #define INPUT_FILENAME "07_fmac_input_2.txt"
 
+// 디버그 출력 매크로 정의
+// #define DEBUG 가 정의되어 있으면 디버그 출력 활성화
+//#define DEBUG
+#ifdef DEBUG
+#define DEBUG_PRINT(...) printf(__VA_ARGS__)
+#define DEBUG_PRINTBITS(x) printbits(x)
+#else
+#define DEBUG_PRINT(...)
+#define DEBUG_PRINTBITS(x)
+#endif
+
 
 int main()
 {
@@ -113,11 +124,11 @@ int main()
         return 1;
     }
 
-    printf("\n");
-    printf(RED   "################################################################\n" RESET);
-    printf(GREEN "##  FLOATING POINT                                            ##\n" RESET);
-    printf(BLUE  "##  FMAC NORMAL NO GRS                   VERSION : %s  ##\n" RESET, _FMAC_NORMAL_NO_GRS_VERSION_);
-    printf(CYAN  "################################################################\n\n" RESET);
+    DEBUG_PRINT("\n");
+    DEBUG_PRINT(RED   "################################################################\n" RESET);
+    DEBUG_PRINT(GREEN "##  FLOATING POINT                                            ##\n" RESET);
+    DEBUG_PRINT(BLUE  "##  FMAC NORMAL NO GRS                   VERSION : %s  ##\n" RESET, _FMAC_NORMAL_NO_GRS_VERSION_);
+    DEBUG_PRINT(CYAN  "################################################################\n\n" RESET);
     // fprintf(output_file, "\n");
     fprintf(output_file, "################################################################\n");
     fprintf(output_file, "##  FLOATING POINT                                            ##\n");
@@ -134,7 +145,7 @@ int main()
         int ref_match = 0;
         int error_pass = 0;
 
-        printf(GREEN "#%05d  " RESET, i+1);  // #00001
+        DEBUG_PRINT(GREEN "#%05d  " RESET, i+1);  // #00001
         fprintf(output_file, "#%05d  ", i+1);  // #00001
 
         if(fgets(line, sizeof(line), input_file) == NULL){
@@ -149,7 +160,7 @@ int main()
         expected_flag   = strtoul(pos, &pos, 16);
 
         // printf("%04u %04u %04u %04u\n", x, y, expected_output, expected_flag); // 10진수 출력
-        printf("%04X %04X %04X %04X %02X", x, y, z, expected_output, expected_flag); // 16진수 출력
+        DEBUG_PRINT("%04X %04X %04X %04X %02X", x, y, z, expected_output, expected_flag); // 16진수 출력
         fprintf(output_file, "%04X %04X %04X %04X %02X", x, y, z, expected_output, expected_flag); // 16진수 출력
 
 
@@ -176,11 +187,11 @@ int main()
 
         if(testfloat_pass == 1){  // TestFloat 결과와 동일
             testfloat_pass_cnt++;
-            printf("   <------  %s ", "PASS");
+            DEBUG_PRINT("   <------  %s ", "PASS");
             fprintf(output_file, "   <------  %s      ", "PASS");
         }else if(testfloat_pass == 0){  // TestFloat 결과와 다르지만 00_ref.txt 와 matching 함
             testfloat_fail_cnt++;
-            printf(MAGENTA "   <-  %s %04X " RESET, "FAIL" , actual_output);
+            DEBUG_PRINT(MAGENTA "   <-  %s %04X " RESET, "FAIL" , actual_output);
             fprintf(output_file, "   <------  %s %04X ", "FAIL" , actual_output);
         }
 
@@ -188,21 +199,21 @@ int main()
         if (((x >> 10) & 0x1F) == 0 && (x & 0x3FF) != 0){
             // printf("  <- X is Denormal!");
             // fprintf(output_file, "  <- X is Denormal!");
-            printf("  <- X is Underflow!");
+            DEBUG_PRINT("  <- X is Underflow!");
             fprintf(output_file, "  <- X is Underflow!");
             // continue;
         }
         if (((y >> 10) & 0x1F) == 0 && (y & 0x3FF) != 0){
             // printf("  <- Y is Denormal!");
             // fprintf(output_file, "  <- Y is Denormal!");
-            printf("  <- Y is Underflow!");
+            DEBUG_PRINT("  <- Y is Underflow!");
             fprintf(output_file, "  <- Y is Underflow!");
             // continue;
         }
         if (((z >> 10) & 0x1F) == 0 && (z & 0x3FF) != 0){
             // printf("  <- Y is Denormal!");
             // fprintf(output_file, "  <- Y is Denormal!");
-            printf("  <- Z is Underflow!");
+            DEBUG_PRINT("  <- Z is Underflow!");
             fprintf(output_file, "  <- Z is Underflow!");
             // continue;
         }
@@ -210,17 +221,17 @@ int main()
         // NaN is NOT supported. (exponent == 0x1F && mantissa !=0)
         // But, The calculation range includes exponent 0x1F.
         if (((x >> 10) & 0x1F) == 0x1F && (x & 0x3FF) != 0){
-            printf("  <- X is NaN!");
+            DEBUG_PRINT("  <- X is NaN!");
             fprintf(output_file, "  <- X is NaN!");
             // continue;
         }
         if (((y >> 10) & 0x1F) == 0x1F && (y & 0x3FF) != 0){
-            printf("  <- Y is NaN!");
+            DEBUG_PRINT("  <- Y is NaN!");
             fprintf(output_file, "  <- Y is NaN!");
             // continue;
         }
         if (((z >> 10) & 0x1F) == 0x1F && (z & 0x3FF) != 0){
-            printf("  <- Z is NaN!");
+            DEBUG_PRINT("  <- Z is NaN!");
             fprintf(output_file, "  <- Z is NaN!");
             // continue;
         }
@@ -228,17 +239,17 @@ int main()
         // +-infinite is NOT supported. (exponent == 0x1F && mantissa ==0)
         // But, The calculation range includes exponent 0x1F.
         if (((x >> 10) & 0x1F) == 0x1F && (x & 0x3FF) == 0){
-            printf("  <- X is +-Inf!");
+            DEBUG_PRINT("  <- X is +-Inf!");
             fprintf(output_file, "  <- X is +-Inf!");
             // continue;
         }
         if (((y >> 10) & 0x1F) == 0x1F && (y & 0x3FF) == 0){
-            printf("  <- Y is +-Inf!");
+            DEBUG_PRINT("  <- Y is +-Inf!");
             fprintf(output_file, " <- Y is +-Inf!");
             // continue;
         }
         if (((z >> 10) & 0x1F) == 0x1F && (z & 0x3FF) == 0){
-            printf("  <- Z is +-Inf!");
+            DEBUG_PRINT("  <- Z is +-Inf!");
             fprintf(output_file, " <- Z is +-Inf!");
             // continue;
         }
@@ -247,7 +258,7 @@ int main()
         if (((expected_output >> 10) & 0x1F) == 0 && (expected_output & 0x3FF) != 0){
             // printf("  <- Expected is Denormal!");
             // fprintf(output_file, "  <- Expected is Denormal!");
-            printf("  <- Expected is Underflow!");
+            DEBUG_PRINT("  <- Expected is Underflow!");
             fprintf(output_file, "  <- Expected is Underflow!");
             // continue;
         }
@@ -255,7 +266,7 @@ int main()
         // NaN is NOT supported. (exponent == 0x1F && mantissa !=0)
         // But, The calculation range includes exponent 0x1F.
         if (((expected_output >> 10) & 0x1F) == 0x1F && (expected_output & 0x3FF) != 0){
-            printf("  <- Expected is NaN!");
+            DEBUG_PRINT("  <- Expected is NaN!");
             fprintf(output_file, "  <- Expected is NaN!");
             // continue;
         }
@@ -263,11 +274,11 @@ int main()
         // +-infinite is NOT supported. (exponent == 0x1F && mantissa ==0)
         // But, The calculation range includes exponent 0x1F.
         if (((expected_output >> 10) & 0x1F) == 0x1F && (expected_output & 0x3FF) == 0){
-            printf("  <- Expected is +-Inf!");
+            DEBUG_PRINT("  <- Expected is +-Inf!");
             fprintf(output_file, "  <- Expected is +-Inf!");
             // continue;
         }
-        printf("\n");
+        DEBUG_PRINT("\n");
         fprintf(output_file, "\n");
         
         double x_dec, y_dec, z_dec, expected_dec, actual_dec, real_dec;
@@ -326,14 +337,14 @@ int main()
         if (expected_error >= actual_error) error = actual_error;  // expected와 actual의 가장 작은 유효숫자 중 작은 것 선택
         else error = expected_error;
 
-        printf("-------- X --------   -------- Y --------   ------ X * Y ------   -------- Z --------\n");
-        printf("%+19.10f   %+19.10f   %+19.10f   %+19.10f\n", x_dec, y_dec, x_dec*y_dec, z_dec);
+        DEBUG_PRINT("-------- X --------   -------- Y --------   ------ X * Y ------   -------- Z --------\n");
+        DEBUG_PRINT("%+19.10f   %+19.10f   %+19.10f   %+19.10f\n", x_dec, y_dec, x_dec*y_dec, z_dec);
         
-        printf("- Expected_Output -   -- Actual_Output --   --- Real_result ---\n");
-        printf("%19.10f   %19.10f   %19.10f\n", expected_dec, actual_dec, real_dec);
+        DEBUG_PRINT("- Expected_Output -   -- Actual_Output --   --- Real_result ---\n");
+        DEBUG_PRINT("%19.10f   %19.10f   %19.10f\n", expected_dec, actual_dec, real_dec);
 
-        printf("--- |Real-Expected|   ----- |Real-Actual|   ------- |Min Error|\n");
-        printf("%19.10f   %19.10f   %19.10f", r_e, r_a, error);
+        DEBUG_PRINT("--- |Real-Expected|   ----- |Real-Actual|   ------- |Min Error|\n");
+        DEBUG_PRINT("%19.10f   %19.10f   %19.10f", r_e, r_a, error);
 
         if( r_e >= r_a ){  // If Real-Expected >= Real-Actual
             real_pass = 1;
@@ -382,18 +393,18 @@ int main()
 
         if(real_pass == 1){  // 10진수 계산 기준 Pass
             real_pass_cnt++;
-            printf(BLUE "   <-------  REAL PASS  \n" RESET);
+            DEBUG_PRINT(BLUE "   <-------  REAL PASS  \n" RESET);
             fprintf(output_file, "                            <------  REAL PASS\n");
         }else if(real_pass == 0 && ref_match == 1){  // 10진수 계산 기준 틀리지만, 00_ref.txt 와 matching 함
             real_pass_cnt++;
-            printf(YELLOW "   <-------  REAL PASS(REF MATCH)  \n" RESET);
+            DEBUG_PRINT(YELLOW "   <-------  REAL PASS(REF MATCH)  \n" RESET);
             fprintf(output_file, "                            <------  REAL PASS(REF MATCH)\n");
         }else if(real_pass == 0 && error_pass == 1){  // 10진수 계산 기준 틀리지만, 오차 범위에 들어감
             error_pass_cnt++;
-            printf(YELLOW "   <------  ERROR PASS  \n" RESET);
+            DEBUG_PRINT(YELLOW "   <------  ERROR PASS  \n" RESET);
             fprintf(output_file, "                            <------  ERRO PASS\n");
         }else if(real_pass == 0 && ref_match == 0){  // 10진수 계산 기준 틀리고, 00_ref.txt 와 matching 안함
-            printf(RED "   <-------  REAL FAIL  \n" RESET);
+            DEBUG_PRINT(RED "   <-------  REAL FAIL  \n" RESET);
             fprintf(output_file, "                            <------  REAL FAIL   <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
             failcase[failcase_cnt] = i+1;
             failx[failcase_cnt] = x;
@@ -406,15 +417,15 @@ int main()
         }
 
         if(testfloat_pass == 0 || real_pass == 0){
-            printf("\tExpected_Output (%04X)\n", expected_output);
+            DEBUG_PRINT("\tExpected_Output (%04X)\n", expected_output);
             // fprintf(output_file, "Expected_Output\n");
-            printbits(expected_output);
+            DEBUG_PRINTBITS(expected_output);
 
-            printf("\tActual_Output   (%04X)\n", actual_output);
+            DEBUG_PRINT("\tActual_Output   (%04X)\n", actual_output);
             // fprintf(output_file, "\nActual_Output\n");
-            printbits(actual_output);
+            DEBUG_PRINTBITS(actual_output);
         }
-        printf("\n");
+        DEBUG_PRINT("\n");
         fprintf(output_file, "\n");
     }
 

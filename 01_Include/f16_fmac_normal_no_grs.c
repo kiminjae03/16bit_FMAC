@@ -103,9 +103,9 @@ unsigned int f16_fmac_normal_no_grs(unsigned int x, unsigned int y, unsigned int
 
     // Aligning
     aligned_l = sigf_l;
-    if((1 <= expo_diff) && (expo_diff <= 20)){  // Normal
+    if((1 <= expo_diff) && (expo_diff <= 21)){  // Normal
         aligned_s = sigf_s >> expo_diff;
-    }else if(21 <= expo_diff) {                 // Mantissa Underflow
+    }else if(22 <= expo_diff) {                 // Mantissa Underflow
         aligned_s = 0;
     }else{                                      // No Aligning
         aligned_s = sigf_s;
