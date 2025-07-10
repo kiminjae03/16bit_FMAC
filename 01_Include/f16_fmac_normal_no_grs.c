@@ -164,11 +164,11 @@ unsigned int f16_fmac_normal_no_grs(unsigned int x, unsigned int y, unsigned int
     }
 
     // Normalizing
-    if(32 <= expo){         // Overflow
-        flag = OVERFLOW;
-    }else if(expo <= 0) {   // Underflow
-        flag = UNDERFLOW;
-    }else{;}                // Normal
+    // if(32 <= expo){         // Overflow
+    //     flag = OVERFLOW;
+    // }else if(expo <= 0) {   // Underflow
+    //     flag = UNDERFLOW;
+    // }else{;}                // Normal
 
     mant = (aligned >> 11) & 0x3FF;
 
