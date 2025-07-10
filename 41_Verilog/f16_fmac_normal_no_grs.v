@@ -80,7 +80,7 @@ wire [5:0] expo_diff = expo_l - expo_s;
 // Aligning
 wire [21:0] aligned_l, aligned_s;
 assign aligned_l = sigf_l;
-assign aligned_s = (expo_diff > 6'd21) ? 22'd0 : sigf_s >> expo_diff;
+assign aligned_s = (expo_diff > 6'd20) ? 22'd0 : sigf_s >> expo_diff;
 
 // 2's Complement and Add
 // reg [22:0] aligned;
