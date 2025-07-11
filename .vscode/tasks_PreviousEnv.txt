@@ -1,0 +1,46 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "C/C++: g++.exe build active file",
+            "type": "process",
+            // "type": "shell",       // at UCRT64 updated env
+            "command": "C:/msys64/ucrt64/bin/g++.exe",
+            "args": [
+                "-fdiagnostics-color=always",
+                "-g",
+                "${file}",
+                "${workspaceFolder}/01_Include/calerror.c",
+                "${workspaceFolder}/01_Include/f16_adder_denormal_grs.c",
+                "${workspaceFolder}/01_Include/f16_adder_normal_grs.c",
+                "${workspaceFolder}/01_Include/f16_adder_normal_no_grs.c",
+                "${workspaceFolder}/01_Include/f16_fmac_normal_no_grs.c",
+                "${workspaceFolder}/01_Include/f16_multi_denormal_grs.c",
+                "${workspaceFolder}/01_Include/f16_multi_normal_grs.c",
+                "${workspaceFolder}/01_Include/f16_multi_normal_no_grs.c",
+                "${workspaceFolder}/01_Include/hextodec.c",
+                "${workspaceFolder}/01_Include/printbits.c",
+                "${workspaceFolder}/01_Include/sumofbits.c",
+                "-I",
+                "${workspaceFolder}/01_Include",
+                "-o",
+                "${fileDirname}/${fileBasenameNoExtension}.exe"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            // "presentation": {
+            //     "echo": true,
+            //     "reveal": "always",
+            //     "focus": false,
+            //     "panel": "shared",
+            //     "showReuseMessage": true,
+            //     "clear": false
+            // },
+            "problemMatcher": [
+                "$gcc"
+            ]
+        }
+    ]
+}

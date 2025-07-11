@@ -1,8 +1,29 @@
 {
   "C_Cpp.default.compilerPath": "C:/msys64/ucrt64/bin/g++.exe",
+  // "C_Cpp.default.compilerPath": "/ucrt64/bin/g++.exe",
   "files.associations": {
     "f16_adder.h": "c",
     "math.h": "c",
     "cmath": "cpp"
-  }
+  },
+  "terminal.integrated.profiles.windows": {
+    "MSYS2 UCRT64": {
+      "path": "C:/msys64/usr/bin/bash.exe",
+      "args": ["--login", "-i"],
+      "env": {
+        "MSYSTEM": "UCRT64",
+        "CHERE_INVOKING": "1"
+      },
+      "icon": "terminal-bash"
+    }
+  },
+  "terminal.integrated.env.windows": {
+      "CHERE_INVOKING": "1",
+      "MSYSTEM": "UCRT64",
+  },
+  "terminal.integrated.defaultProfile.windows": "MSYS2 UCRT64",
+  // "terminal.integrated.defaultProfile.windows": "Git Bash",
+  "terminal.integrated.mouseWheelZoom": true,
+  "terminal.integrated.shellIntegration.enabled": false,
+  "terminal.integrated.scrollback": 10000
 }

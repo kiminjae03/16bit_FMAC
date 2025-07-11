@@ -5,8 +5,8 @@
 # c 시뮬레이션 결과 : #00002  BDF2 8C0B 102F 1330 01   <------  PASS      
 # verilog 입력 :      BDF2 8C0B 102F 1330
 
-input_filename = '31_F16_Fmac_Normal_No_GRS_O/08_fmac_normal_no_grs_output__1.txt'
-output_filename  = '07_fmac_verilog_input_1.txt'
+input_filename = '31_F16_Fmac_Normal_No_GRS_O/08_fmac_normal_no_grs_output__2.txt'
+output_filename  = '07_fmac_verilog_input_2.txt'
 
 with open(output_filename, 'w', encoding='utf-8') as out_f:
     out_f.write('')

@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 // 16비트 half-float 구조체
 typedef union {
@@ -39,3 +42,7 @@ double hextodec(unsigned int hex_input);
 double sumofbits(int x, int n);
 unsigned int tzcofmantissa(unsigned int hex_input);
 double calerror(unsigned int hex_input);
+
+#ifdef __cplusplus
+}
+#endif

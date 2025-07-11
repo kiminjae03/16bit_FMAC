@@ -41,8 +41,8 @@ SOFTFLOAT_OPTS ?= \
   -DSOFTFLOAT_ROUND_ODD -DINLINE_LEVEL=5 -DSOFTFLOAT_FAST_DIV32TO16 \
   -DSOFTFLOAT_FAST_DIV64TO32
 
-# DELETE = rm -f
-DELETE = del -f
+DELETE = rm -f
+# DELETE = del -f
 C_INCLUDES = -I. -I$(SOURCE_DIR)/$(SPECIALIZE_TYPE) -I$(SOURCE_DIR)/include
 COMPILE_C = \
   x86_64-w64-mingw32-gcc -c -Werror-implicit-function-declaration \

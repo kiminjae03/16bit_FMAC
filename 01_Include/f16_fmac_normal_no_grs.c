@@ -1,5 +1,5 @@
 #include "f16_arith.h"
-const char* _FMAC_NORMAL_NO_GRS_VERSION_ = "250605.01";
+const char* _FMAC_NORMAL_NO_GRS_VERSION_ = "250710.01";
 
 #define NORMAL    0
 #define OVERFLOW  1
@@ -103,13 +103,14 @@ unsigned int f16_fmac_normal_no_grs(unsigned int x, unsigned int y, unsigned int
 
     // Aligning
     aligned_l = sigf_l;
-    if((1 <= expo_diff) && (expo_diff <= 20)){  // Normal
+    if((0 <= expo_diff) && (expo_diff <= 20)){  // Normal
         aligned_s = sigf_s >> expo_diff;
     }else if(21 <= expo_diff) {                 // Mantissa Underflow
         aligned_s = 0;
-    }else{                                      // No Aligning
-        aligned_s = sigf_s;
     }
+    // else{                                      // No Aligning
+    //     aligned_s = sigf_s;
+    // }
 
     // 2's Complement and Add
     if( sign_xor == 0x1){                              // Sign is difference
@@ -163,7 +164,7 @@ unsigned int f16_fmac_normal_no_grs(unsigned int x, unsigned int y, unsigned int
         flag = UNDERFLOW;
     }
 
-    // Normalizing
+    // // Normalizing
     // if(32 <= expo){         // Overflow
     //     flag = OVERFLOW;
     // }else if(expo <= 0) {   // Underflow

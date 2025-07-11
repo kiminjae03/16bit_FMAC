@@ -4,6 +4,7 @@
             "name": "GCC",
             "includePath": [
                 "${workspaceFolder}/**"
+                // "C:/msys64/ucrt64/include"
             ],
             "defines": [
                 "_DEBUG",

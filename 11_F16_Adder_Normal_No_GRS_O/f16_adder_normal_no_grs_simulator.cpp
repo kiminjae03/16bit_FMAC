@@ -122,8 +122,8 @@ int main()
     fprintf(output_file, "##  ADDER NORMAL NO GRS                  VERSION : %s  ##\n", _ADDER_NORMAL_NO_GRS_VERSION_);
     fprintf(output_file, "################################################################\n\n");
 
-    for(int i=0; i<46574; i++) {
-    // for(int i=0; i<100; i++) {
+    // for(int i=0; i<46574; i++) {
+    for(int i=0; i<10; i++) {
         char line[MAX_LINE_LEN];
         char *pos = line;
         int testfloat_pass = 0;

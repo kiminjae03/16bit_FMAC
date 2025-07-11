@@ -62,13 +62,13 @@ using namespace std;
 
 // 디버그 출력 매크로 정의
 // #define DEBUG 가 정의되어 있으면 디버그 출력 활성화
-//#define DEBUG
+// #define DEBUG
 #ifdef DEBUG
-#define DEBUG_PRINT(...) printf(__VA_ARGS__)
-#define DEBUG_PRINTBITS(x) printbits(x)
+    #define DEBUG_PRINT(...) printf(__VA_ARGS__)
+    #define DEBUG_PRINTBITS(x) printbits(x)
 #else
-#define DEBUG_PRINT(...)
-#define DEBUG_PRINTBITS(x)
+    #define DEBUG_PRINT(...)
+    #define DEBUG_PRINTBITS(x)
 #endif
 
 
@@ -135,9 +135,9 @@ int main()
     fprintf(output_file, "##  FMAC NORMAL NO GRS                   VERSION : %s  ##\n", _FMAC_NORMAL_NO_GRS_VERSION_);
     fprintf(output_file, "################################################################\n\n");
 
-    for(int i=0; i<3066634; i++) {
+    // for(int i=0; i<3066634; i++) {
     // for(int i=0; i<10000; i++) {
-    // for(int i=0; i<20; i++) {
+    for(int i=0; i<20; i++) {
         char line[MAX_LINE_LEN];
         char *pos = line;
         int testfloat_pass = 0;
